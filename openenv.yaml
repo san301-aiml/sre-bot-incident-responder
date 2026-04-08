@@ -1,0 +1,60 @@
+spec_version: "1"
+
+name: "sre-bot-incident-responder"
+version: "1.0.0"
+description: "SRE simulation for log parsing, process management, and disk recovery."
+
+entrypoint: "app:app"
+sdk: "docker"
+
+runtime:
+  port: 7860
+  language: "python"
+
+action_space:
+  type: object
+  properties:
+    command:
+      type: string
+    thought:
+      type: string
+
+observation_space:
+  type: object
+  properties:
+    terminal_output:
+      type: string
+    system_status:
+      type: string
+    current_step:
+      type: integer
+    echoed_message:
+      type: string
+    # Add these to match your final models.py and app.py
+    reward:
+      type: number
+    done:
+      type: boolean
+
+reward_model:
+  type: float
+  range: [0.0, 1.0]
+
+tasks:
+  - id: "easy"
+    name: "Log Analysis"
+    description: "Identify the critical error code in the system logs."
+    difficulty: "easy"
+    goal: "Extract the string 'CRITICAL_ERROR_505' from the logs."
+
+  - id: "medium"
+    name: "Process Management"
+    description: "Terminate the high-CPU process (PID 405) to restore stability."
+    difficulty: "medium"
+    goal: "Kill process with PID 405."
+
+  - id: "hard"
+    name: "Disk Recovery"
+    description: "Locate and remove large log files to resolve disk exhaustion."
+    difficulty: "hard"
+    goal: "Truncate or remove log files to free up at least 40GB."
