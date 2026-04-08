@@ -1,18 +1,26 @@
-from fastapi import FastAPI
-from models import SREAction, SREObservation, SREState
-from env import SREBotEnv
+from fastapi import FastAPI, Body
+from typing import Optional
+from .models import SREAction, SREObservation, SREState
+from .env import SREBotEnv
 
 app = FastAPI(title="sre-bot-incident-responder")
 env = SREBotEnv()
+
+@app.get("/")
+async def root():
+    return {"message": "SRE-Bot Environment is Live", "docs": "/docs"}
 
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
 
+# ✅ FIXED: Added default task_id and Optional type to handle empty JSON bodies {}
 @app.post("/reset", response_model=SREObservation)
-async def reset(task_id: str = "easy"):
-    return env.reset(task_id)
+async def reset(task_id: Optional[str] = Body("easy")):
+    return env.reset(task_id if task_id else "easy")
 
+# ✅ FIXED: Explicitly return a dictionary containing 'observation' 
+# This ensures your inference.py can find res["observation"]
 @app.post("/step")
 async def step(action: SREAction):
     obs, reward, done, info = env.step(action)
