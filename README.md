@@ -1,39 +1,55 @@
+---
+Title: SRE Bot Incident Responder
+emoji: 🏢
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+license: apache-2.0
+---
+
 # SRE-Bot: An OpenEnv Agentic Debugging Environment
 
-SRE-Bot is a specialized reinforcement learning environment built on the **OpenEnv** specification. It simulates the high-stakes world of Site Reliability Engineering (SRE), providing a playground for LLM-based agents to practice autonomous infrastructure troubleshooting.
+SRE-Bot is a specialized agentic environment built on the **OpenEnv** specification for the Meta AI Hackathon. It simulates real-world Site Reliability Engineering (SRE) scenarios, providing a playground for LLM-based agents to solve infrastructure incidents autonomously.
 
 ## 🏗 Why SRE-Bot?
-Most RL environments focus on games (like Chess or Atari). While fun, they don't help us build agents that can manage real cloud infrastructure. SRE-Bot bridges this gap by forcing agents to interact with a simulated Linux terminal to resolve critical system failures.
+Most RL environments focus on toy problems. SRE-Bot bridges the gap by forcing agents to interact with a simulated Linux terminal to resolve critical system failures using "Natural Reasoning" and Chain-of-Thought (CoT).
 
-## 🛠 Action & Observation Specs
-- **Action**: The agent sends `SREAction` objects containing a shell command and a "thought" string (Chain of Thought). This encourages the agent to explain its reasoning before execution.
-- **Observation**: The environment returns `SREObservation`, which includes raw terminal output, current system health status, and step counts.
+## 🚀 Scenario-Based Tasks (Tiered Difficulty)
+Designed with progressive difficulty to test agent persistence and logic:
 
-## 🚀 Scenario-Based Tasks
-I have designed three progressive scenarios that mirror actual on-call incidents:
-
-1. **Log Investigation (Easy)**:
-   - **Scenario**: A "Latency High" alert is triggered.
-   - **Goal**: Use `grep` to parse a massive log file and find the specific failure code.
+1. **Log Analysis (Easy)**:
+   - **Objective**: Use shell commands to identify the specific error code `CRITICAL_ERROR_505` from system logs.
    
 2. **Process Management (Medium)**:
-   - **Scenario**: A service is unresponsive due to a "zombie" process.
-   - **Goal**: Identify the problematic PID (405) and use `kill` signals to restore stability.
+   - **Objective**: Identify a resource-hogging process (PID 405) using `ps` or `top` and terminate it to restore system stability.
 
 3. **Disk Recovery (Hard)**:
-   - **Scenario**: A database has locked up because the disk is 100% full.
-   - **Goal**: Safely identify non-critical `.log` files and clear them to regain capacity.
+   - **Objective**: Troubleshoot a 100% disk exhaustion event by locating a massive hidden log file and removing it safely.
+
+## 🛠 Action & Observation Specs
+- **Action (`SREAction`)**: The agent provides a shell command and a "thought" string.
+- **Observation (`SREObservation`)**: The environment returns terminal output, system health status, rewards, and task completion flags.
 
 ## 📈 Grader & Rewards
-This environment uses a **dense reward function**. Instead of a binary success/failure at the end, the agent receives partial signals for:
-- Executing valid Linux syntax.
-- Narrowing down the problem area.
-- Final resolution (1.0 score).
+This environment implements a **dense reward function** to guide agent learning:
+- **Progressive Rewards**: Rewards (0.2 - 0.5) for investigative commands that narrow down the root cause.
+- **Success Reward**: A terminal 1.0 score upon successful resolution of the incident.
+- **Efficiency Penalty**: Small step penalties (-0.01) to encourage the agent to find the shortest path to recovery.
 
-## 💻 Local Quickstart
+## 💻 Setup & Local Usage
+
+### 1. Installation
 ```bash
-# Install the OpenEnv core
-pip install openenv-core fastapi uvicorn pydantic
+pip install fastapi uvicorn pydantic requests huggingface_hub
+# Set your Hugging Face API Token
+export HF_TOKEN="your_token_here"
 
-# Launch the environment server
-python -m uvicorn app:app --port 7860
+# Start the Environment Server in the background
+uvicorn app:app --host 0.0.0.0 --port 7860 &
+
+# Wait 3 seconds and run the baseline agent
+sleep 3
+python inference.py
+docker build -t sre-bot .
+docker run -p 7860:7860 sre-bot
