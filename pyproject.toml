@@ -1,0 +1,19 @@
+[project]
+name = "sre-bot-incident-responder"
+version = "1.0.0"
+description = "SRE simulation for OpenEnv Meta AI Hackathon"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "requests",
+    "openai",
+    "openenv-core>=0.2.0"
+]
+
+[project.scripts]
+server = "server.app:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build_meta"
