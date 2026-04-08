@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body
 from typing import Optional
 from .models import SREAction, SREObservation, SREState
 from .env import SREBotEnv
+import uvicorn
 
 app = FastAPI(title="sre-bot-incident-responder")
 env = SREBotEnv()
@@ -42,3 +43,9 @@ async def metadata():
         "version": "1.0.0",
         "tasks": ["easy", "medium", "hard"]
     }
+def main():
+    """Main entry point for multi-mode deployment."""
+    # Ensure this matches your actual file name (server.app or just app)
+    uvicorn.run("server.app:app", host="0.0.0.0", port=8000)
+if __name__ == "__main__":
+    main()
