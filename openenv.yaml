@@ -4,6 +4,7 @@ name: "sre-bot-incident-responder"
 version: "1.0.0"
 description: "SRE simulation for log parsing, process management, and disk recovery."
 
+# Entrypoint for uvicorn to run your FastAPI app
 entrypoint: "app:app"
 sdk: "docker"
 
@@ -11,6 +12,7 @@ runtime:
   port: 7860
   language: "python"
 
+# Must match the fields in your models.py SREAction class
 action_space:
   type: object
   properties:
@@ -19,6 +21,7 @@ action_space:
     thought:
       type: string
 
+# Must match the fields in your models.py SREObservation class exactly
 observation_space:
   type: object
   properties:
@@ -30,12 +33,13 @@ observation_space:
       type: integer
     echoed_message:
       type: string
-    # Add these to match your final models.py and app.py
+    # Mandatory fields to pass openenv validate and ensure SDK parsing
     reward:
       type: number
     done:
       type: boolean
 
+# Reward is mapped to a float for RL training
 reward_model:
   type: float
   range: [0.0, 1.0]
